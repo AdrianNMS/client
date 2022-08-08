@@ -20,14 +20,9 @@ public class ClientRestController
     private static final Logger log = LoggerFactory.getLogger(ClientRestController.class);
 
     @GetMapping
-    public Mono<ResponseEntity<Object>> FindAll()
+    public Mono<ResponseEntity<Object>> findAll()
     {
         return dao.findAll()
-                .map(client -> {
-                    client.setFirstname(client.getFirstname().toUpperCase());
-                    client.setLastName(client.getLastName().toUpperCase());
-                    return client;
-                })
                 .doOnNext(client -> log.info(client.toString()))
                 .collectList()
                 .map(clients -> ResponseHandler.response("Done", HttpStatus.OK, clients))
@@ -35,7 +30,7 @@ public class ClientRestController
     }
 
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<Object>> Find(@PathVariable String id)
+    public Mono<ResponseEntity<Object>> find(@PathVariable String id)
     {
         return dao.findById(id)
                 .doOnNext(client -> log.info(client.toString()))
@@ -44,7 +39,7 @@ public class ClientRestController
     }
 
     @PostMapping
-    public Mono<ResponseEntity<Object>> Create(@RequestBody Client cli)
+    public Mono<ResponseEntity<Object>> create(@RequestBody Client cli)
     {
 
         return dao.save(cli)
@@ -54,7 +49,7 @@ public class ClientRestController
     }
 
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<Object>> Update(@PathVariable("id") String id, @RequestBody Client cli)
+    public Mono<ResponseEntity<Object>> update(@PathVariable("id") String id, @RequestBody Client cli)
     {
         return dao.existsById(id).flatMap(check -> {
             if (check)
@@ -69,7 +64,7 @@ public class ClientRestController
     }
 
     @DeleteMapping("/{id}")
-    public Mono<ResponseEntity<Object>> Delete(@PathVariable("id") String id)
+    public Mono<ResponseEntity<Object>> delete(@PathVariable("id") String id)
     {
         log.info(id);
 

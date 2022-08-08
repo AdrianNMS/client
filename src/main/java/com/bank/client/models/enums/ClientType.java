@@ -1,6 +1,6 @@
 package com.bank.client.models.enums;
 
-public enum clientType
+public enum ClientType
 {
     PERSONAL, COMPANY
 }

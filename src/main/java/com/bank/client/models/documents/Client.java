@@ -1,8 +1,8 @@
 package com.bank.client.models.documents;
 
 import com.bank.client.models.utils.Audit;
-import com.bank.client.models.enums.clientGenre;
-import com.bank.client.models.enums.clientType;
+import com.bank.client.models.enums.ClientGenre;
+import com.bank.client.models.enums.ClientType;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,10 +14,10 @@ public class Client extends Audit
 {
     @Id
     private String id;
-    private clientType type;
+    private ClientType type;
     private String firstname;
     private String lastName;
-    private clientGenre genre;
+    private ClientGenre genre;
     private String documentId;
     private String phoneNumber;
     private String email;

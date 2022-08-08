@@ -1,5 +1,5 @@
 package com.bank.client.models.enums;
 
-public enum clientGenre {
+public enum ClientGenre {
     MALE, FEMALE
 }
