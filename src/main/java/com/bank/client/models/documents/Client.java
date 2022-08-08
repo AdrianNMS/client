@@ -23,4 +23,16 @@ public class Client extends Audit
     private String email;
     private Object clientData;
 
+    public void setClientDataId(String idClientData)
+    {
+        if(clientData!= null)
+            if(clientData instanceof Personal)
+            {
+                ((Personal) clientData).setId(idClientData);
+            }
+            else if(clientData instanceof Company)
+            {
+                ((Company) clientData).setId(idClientData);
+            }
+    }
 }

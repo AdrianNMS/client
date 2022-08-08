@@ -4,13 +4,12 @@ import com.bank.client.models.utils.Audit;
 import lombok.Data;
 
 import java.util.List;
-import java.util.UUID;
 
 @Data
 public class Company extends Audit
 {
-    public UUID id;
-    public List<UUID> owners;
-    public List<UUID> signatories;
-    public List<UUID> currentAccounts;
+    public String id;
+    public List<String> owners;
+    public List<String> signatories;
+    public List<String> currentAccounts;
 }

@@ -3,6 +3,7 @@ package com.bank.client.controllers;
 import com.bank.client.handler.ResponseHandler;
 import com.bank.client.models.dao.ClientDao;
 import com.bank.client.models.documents.Client;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,35 +23,44 @@ public class ClientRestController
     @GetMapping
     public Mono<ResponseEntity<Object>> findAll()
     {
+        log.info("[INI] findAll Client");
         return dao.findAll()
                 .doOnNext(client -> log.info(client.toString()))
                 .collectList()
                 .map(clients -> ResponseHandler.response("Done", HttpStatus.OK, clients))
-                .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)));
+                .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
+                .doFinally(fin -> log.info("[END] findAll Client"));
     }
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Object>> find(@PathVariable String id)
     {
+        log.info("[INI] find Client");
         return dao.findById(id)
                 .doOnNext(client -> log.info(client.toString()))
                 .map(client -> ResponseHandler.response("Done", HttpStatus.OK, client))
-                .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)));
+                .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
+                .doFinally(fin -> log.info("[END] find Client"));
     }
 
     @PostMapping
     public Mono<ResponseEntity<Object>> create(@RequestBody Client cli)
     {
-
+        log.info("[INI] create Client");
+        cli.setClientDataId(new ObjectId().toString());
         return dao.save(cli)
-                .doOnNext(client -> log.info(client.toString()))
+                .doOnNext(client -> {
+                    log.info(client.toString());
+                })
                 .map(client -> ResponseHandler.response("Done", HttpStatus.OK, client)                )
-                .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)));
+                .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
+                .doFinally(fin -> log.info("[END] create Client"));
     }
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Object>> update(@PathVariable("id") String id, @RequestBody Client cli)
     {
+        log.info("[INI] update Client");
         return dao.existsById(id).flatMap(check -> {
             if (check)
                 return dao.save(cli)
@@ -60,20 +70,20 @@ public class ClientRestController
             else
                 return Mono.just(ResponseHandler.response("Not found", HttpStatus.NOT_FOUND, null));
 
-        });
+        }).doFinally(fin -> log.info("[END] update Client"));
     }
 
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Object>> delete(@PathVariable("id") String id)
     {
-        log.info(id);
+        log.info("[INI] delete Client");
 
         return dao.existsById(id).flatMap(check -> {
             if (check)
                 return dao.deleteById(id).then(Mono.just(ResponseHandler.response("Done", HttpStatus.OK, null)));
             else
                 return Mono.just(ResponseHandler.response("Not found", HttpStatus.NOT_FOUND, null));
-        });
+        }).doFinally(fin -> log.info("[END] delete Client"));
     }
 }
 
