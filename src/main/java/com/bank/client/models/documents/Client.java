@@ -4,6 +4,7 @@ import com.bank.client.models.utils.Audit;
 import com.bank.client.models.enums.ClientGenre;
 import com.bank.client.models.enums.ClientType;
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -25,14 +26,13 @@ public class Client extends Audit
 
     public void setClientDataId(String idClientData)
     {
-        if(clientData!= null)
-            if(clientData instanceof Personal)
-            {
-                ((Personal) clientData).setId(idClientData);
-            }
-            else if(clientData instanceof Company)
-            {
-                ((Company) clientData).setId(idClientData);
-            }
+        if(clientData instanceof Personal)
+        {
+            ((Personal) clientData).setId(idClientData);
+        }
+        else if(clientData instanceof Company)
+        {
+            ((Company) clientData).setId(idClientData);
+        }
     }
 }

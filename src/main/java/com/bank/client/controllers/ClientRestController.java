@@ -47,14 +47,21 @@ public class ClientRestController
     public Mono<ResponseEntity<Object>> create(@RequestBody Client cli)
     {
         log.info("[INI] create Client");
-        cli.setClientDataId(new ObjectId().toString());
-        return dao.save(cli)
-                .doOnNext(client -> {
-                    log.info(client.toString());
-                })
-                .map(client -> ResponseHandler.response("Done", HttpStatus.OK, client)                )
-                .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
-                .doFinally(fin -> log.info("[END] create Client"));
+        if(cli.getClientData()!=null)
+        {
+            cli.setClientDataId(new ObjectId().toString());
+            return dao.save(cli)
+                    .doOnNext(client -> {
+                        log.info(client.toString());
+                    })
+                    .map(client -> ResponseHandler.response("Done", HttpStatus.OK, client))
+                    .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
+                    .doFinally(fin -> log.info("[END] create Client"));
+        }
+        else
+        {
+            return Mono.just(ResponseHandler.response("Client's data required", HttpStatus.BAD_REQUEST, null));
+        }
     }
 
     @PutMapping("/{id}")
