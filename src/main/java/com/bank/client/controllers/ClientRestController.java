@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/api/client")
 public class ClientRestController
@@ -50,6 +52,7 @@ public class ClientRestController
         if(cli.getClientData()!=null)
         {
             cli.setClientDataId(new ObjectId().toString());
+            cli.setDateRegister(LocalDateTime.now());
             return dao.save(cli)
                     .doOnNext(client -> {
                         log.info(client.toString());
@@ -69,11 +72,13 @@ public class ClientRestController
     {
         log.info("[INI] update Client");
         return dao.existsById(id).flatMap(check -> {
-            if (check)
+            if (check){
+                cli.setDateUpdate(LocalDateTime.now());
                 return dao.save(cli)
                         .doOnNext(client -> log.info(client.toString()))
                         .map(client -> ResponseHandler.response("Done", HttpStatus.OK, client)                )
                         .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)));
+            }
             else
                 return Mono.just(ResponseHandler.response("Not found", HttpStatus.NOT_FOUND, null));
 
