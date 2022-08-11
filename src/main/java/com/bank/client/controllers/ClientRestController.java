@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 
 @RestController
@@ -46,7 +47,7 @@ public class ClientRestController
     }
 
     @PostMapping
-    public Mono<ResponseEntity<Object>> create(@RequestBody Client cli)
+    public Mono<ResponseEntity<Object>> create(@Valid @RequestBody Client cli)
     {
         log.info("[INI] create Client");
         if(cli.getClientData()!=null)
@@ -68,7 +69,7 @@ public class ClientRestController
     }
 
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<Object>> update(@PathVariable("id") String id, @RequestBody Client cli)
+    public Mono<ResponseEntity<Object>> update(@PathVariable("id") String id,@Valid @RequestBody Client cli)
     {
         log.info("[INI] update Client");
         return dao.existsById(id).flatMap(check -> {
