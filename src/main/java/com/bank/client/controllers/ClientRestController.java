@@ -1,8 +1,10 @@
 package com.bank.client.controllers;
 
 import com.bank.client.handler.ResponseHandler;
+import com.bank.client.models.IParameterService;
 import com.bank.client.models.dao.ClientDao;
 import com.bank.client.models.documents.Client;
+import com.bank.client.models.documents.ObjectClientType;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,8 @@ public class ClientRestController
 {
     @Autowired
     private ClientDao dao;
+    @Autowired
+    private IParameterService parameterService;
     private static final Logger log = LoggerFactory.getLogger(ClientRestController.class);
 
     @GetMapping
@@ -97,6 +101,29 @@ public class ClientRestController
             else
                 return Mono.just(ResponseHandler.response("Not found", HttpStatus.NOT_FOUND, null));
         }).doFinally(fin -> log.info("[END] delete Client"));
+    }
+
+    @GetMapping("/param/{id}/{code}")
+    public Mono<ResponseEntity<Object>> getParam(@PathVariable("id") String id, Integer code)
+    {
+        log.info("[INI] getParams");
+
+        return dao.findById(id)
+                .flatMap(client -> {
+                    if(client!=null)
+                    {
+                        ObjectClientType objectClientType = client.getClientDataInterfaz();
+                        return parameterService.findByCode(objectClientType.getTypeClient(), code)
+                                .flatMap(responseParameter -> {
+                                    if (responseParameter.getData() != null)
+                                        return dao.deleteById(id).then(Mono.just(ResponseHandler.response("Done", HttpStatus.OK, responseParameter.getData())));
+                                    else
+                                        return Mono.just(ResponseHandler.response("Parameter not found", HttpStatus.NOT_FOUND, null));
+                                });
+                    }
+                    else
+                        return Mono.just(ResponseHandler.response("Client not found", HttpStatus.NOT_FOUND, null));
+                });
     }
 }
 

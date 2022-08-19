@@ -1,6 +1,14 @@
 package com.bank.client.models.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
 public enum ClientType
 {
-    PERSONAL, COMPANY
+    PERSONAL(0),
+    COMPANY(1);
+
+    private final int value;
 }

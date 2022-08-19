@@ -7,11 +7,16 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class Personal extends Audit
+public class Personal extends Audit implements ObjectClientType
 {
     private String id;
     private PersonalType personalType;
     private String savingAccount;
     private String currentAccount;
     private List<String> fixedTermAccounts;
+
+    @Override
+    public Integer getTypeClient() {
+        return personalType.getValue();
+    }
 }

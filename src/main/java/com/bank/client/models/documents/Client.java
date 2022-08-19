@@ -42,4 +42,18 @@ public class Client extends Audit
             ((Company) clientData).setId(idClientData);
         }
     }
+
+    public ObjectClientType getClientDataInterfaz()
+    {
+        if(clientData instanceof Personal)
+        {
+            return ((Personal) clientData);
+        }
+        else if(clientData instanceof Company)
+        {
+            return ((Company) clientData);
+        }
+        else
+            return null;
+    }
 }
