@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class Company extends Audit implements ObjectClientType
+public class Company extends Audit
 {
     private String id;
     private CompanyType companyType;
@@ -15,8 +15,4 @@ public class Company extends Audit implements ObjectClientType
     private List<String> signatories;
     private List<String> currentAccounts;
 
-    @Override
-    public Integer getTypeClient() {
-        return companyType.getValue();
-    }
 }

@@ -1,11 +1,11 @@
 package com.bank.client.controllers;
 
+import com.bank.client.controllers.helpers.GetParamsHelper;
+import com.bank.client.controllers.helpers.UpgradePYMEHelper;
+import com.bank.client.controllers.helpers.UpgradeVIPHelper;
 import com.bank.client.handler.ResponseHandler;
-import com.bank.client.models.IParameterService;
-import com.bank.client.models.dao.ClientDao;
 import com.bank.client.models.documents.Client;
-import com.bank.client.models.documents.ObjectClientType;
-import org.bson.types.ObjectId;
+import com.bank.client.models.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,26 +15,30 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/client")
 public class ClientRestController
 {
     @Autowired
-    private ClientDao dao;
+    private IClientService clientService;
+
     @Autowired
     private IParameterService parameterService;
+    @Autowired
+    private IPasiveService pasiveService;
+    @Autowired
+    private IActiveService activeService;
+    @Autowired
+    private IMovementService movementService;
     private static final Logger log = LoggerFactory.getLogger(ClientRestController.class);
 
     @GetMapping
     public Mono<ResponseEntity<Object>> findAll()
     {
         log.info("[INI] findAll Client");
-        return dao.findAll()
-                .doOnNext(client -> log.info(client.toString()))
-                .collectList()
-                .map(clients -> ResponseHandler.response("Done", HttpStatus.OK, clients))
+        return clientService.FindAll()
+                .flatMap(clients -> Mono.just(ResponseHandler.response("Done", HttpStatus.OK, clients)))
                 .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
                 .doFinally(fin -> log.info("[END] findAll Client"));
     }
@@ -43,9 +47,8 @@ public class ClientRestController
     public Mono<ResponseEntity<Object>> find(@PathVariable String id)
     {
         log.info("[INI] find Client");
-        return dao.findById(id)
-                .doOnNext(client -> log.info(client.toString()))
-                .map(client -> ResponseHandler.response("Done", HttpStatus.OK, client))
+        return clientService.Find(id)
+                .flatMap(client -> Mono.just(ResponseHandler.response("Done", HttpStatus.OK, client)))
                 .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
                 .doFinally(fin -> log.info("[END] find Client"));
     }
@@ -54,40 +57,20 @@ public class ClientRestController
     public Mono<ResponseEntity<Object>> create(@Valid @RequestBody Client cli)
     {
         log.info("[INI] create Client");
-        if(cli.getClientData()!=null)
-        {
-            cli.setClientDataId(new ObjectId().toString());
-            cli.setDateRegister(LocalDateTime.now());
-            return dao.save(cli)
-                    .doOnNext(client -> {
-                        log.info(client.toString());
-                    })
-                    .map(client -> ResponseHandler.response("Done", HttpStatus.OK, client))
-                    .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
-                    .doFinally(fin -> log.info("[END] create Client"));
-        }
-        else
-        {
-            return Mono.just(ResponseHandler.response("Client's data required", HttpStatus.BAD_REQUEST, null));
-        }
+        return clientService.Create(cli)
+            .flatMap(client -> Mono.just(ResponseHandler.response("Done", HttpStatus.OK, client)))
+            .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
+            .doFinally(fin -> log.info("[END] create Client"));
     }
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Object>> update(@PathVariable("id") String id,@Valid @RequestBody Client cli)
     {
         log.info("[INI] update Client");
-        return dao.existsById(id).flatMap(check -> {
-            if (check){
-                cli.setDateUpdate(LocalDateTime.now());
-                return dao.save(cli)
-                        .doOnNext(client -> log.info(client.toString()))
-                        .map(client -> ResponseHandler.response("Done", HttpStatus.OK, client)                )
-                        .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)));
-            }
-            else
-                return Mono.just(ResponseHandler.response("Not found", HttpStatus.NOT_FOUND, null));
-
-        }).doFinally(fin -> log.info("[END] update Client"));
+        return clientService.Update(id,cli)
+                .flatMap(client -> Mono.just(ResponseHandler.response("Done", HttpStatus.OK, client))                )
+                .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
+                .doFinally(fin -> log.info("[END] update Client"));
     }
 
     @DeleteMapping("/{id}")
@@ -95,12 +78,11 @@ public class ClientRestController
     {
         log.info("[INI] delete Client");
 
-        return dao.existsById(id).flatMap(check -> {
-            if (check)
-                return dao.deleteById(id).then(Mono.just(ResponseHandler.response("Done", HttpStatus.OK, null)));
-            else
-                return Mono.just(ResponseHandler.response("Not found", HttpStatus.NOT_FOUND, null));
-        }).doFinally(fin -> log.info("[END] delete Client"));
+        return clientService.Delete(id)
+                .flatMap(o -> Mono.just(ResponseHandler.response("Done", HttpStatus.OK, null)))
+                .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
+                .switchIfEmpty(Mono.just(ResponseHandler.response("Error", HttpStatus.NO_CONTENT, null)))
+                .doFinally(fin -> log.info("[END] delete Client"));
     }
 
     @GetMapping("/param/{id}/{code}")
@@ -108,22 +90,29 @@ public class ClientRestController
     {
         log.info("[INI] getParams");
 
-        return dao.findById(id)
-                .flatMap(client -> {
-                    if(client!=null)
-                    {
-                        ObjectClientType objectClientType = client.getClientDataInterfaz();
-                        return parameterService.findByCode(objectClientType.getTypeClient(), code)
-                                .flatMap(responseParameter -> {
-                                    if (responseParameter.getData() != null)
-                                        return dao.deleteById(id).then(Mono.just(ResponseHandler.response("Done", HttpStatus.OK, responseParameter.getData())));
-                                    else
-                                        return Mono.just(ResponseHandler.response("Parameter not found", HttpStatus.NOT_FOUND, null));
-                                });
-                    }
-                    else
-                        return Mono.just(ResponseHandler.response("Client not found", HttpStatus.NOT_FOUND, null));
-                });
+        return GetParamsHelper.GetParamsSecuence(id,code,parameterService,clientService,log)
+                .doFinally(fin -> log.info("[END] getParams"));
     }
+
+    @GetMapping("/vip/{idClient}")
+    public Mono<ResponseEntity<Object>> updateVIP(@PathVariable("idClient") String idClient)
+    {
+        log.info("[INI] updateVIP");
+
+        return UpgradeVIPHelper.UpdateVIPSequence(log,clientService, pasiveService,movementService,activeService,idClient)
+                .doFinally(fin -> log.info("[END] updateVIP"));
+
+    }
+
+    @GetMapping("/pyme/{idClient}")
+    public Mono<ResponseEntity<Object>> updatePyme(@PathVariable("idClient") String idClient)
+    {
+        log.info("[INI] updatePyme");
+
+        return UpgradePYMEHelper.UpdatePYMESequence(log,pasiveService,activeService,clientService, idClient)
+                .doFinally(fin -> log.info("[END] updatePyme"));
+
+    }
+
 }
 

@@ -1,6 +1,6 @@
-package com.bank.client.models.impl;
+package com.bank.client.models.services.impl;
 
-import com.bank.client.models.IParameterService;
+import com.bank.client.models.services.IParameterService;
 import com.bank.client.models.utils.ResponseParameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

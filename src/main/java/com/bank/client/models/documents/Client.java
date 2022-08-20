@@ -43,17 +43,21 @@ public class Client extends Audit
         }
     }
 
-    public ObjectClientType getClientDataInterfaz()
+    public Integer getTypeClientData()
     {
         if(clientData instanceof Personal)
         {
-            return ((Personal) clientData);
+            return ((Personal) clientData).getPersonalType().getValue();
         }
         else if(clientData instanceof Company)
         {
-            return ((Company) clientData);
+            return ((Company) clientData).getCompanyType().getValue();
         }
         else
+        {
             return null;
+        }
     }
+
+
 }
