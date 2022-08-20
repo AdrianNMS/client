@@ -45,9 +45,7 @@ public class UpgradeVIPHelper
                 return UpdateClient(log,clientService,idClient);
             else
                 return Mono.just(ResponseHandler.response("You don't have enough balance in your credit card", HttpStatus.OK, null));
-        })
-        .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
-        .switchIfEmpty(Mono.just(ResponseHandler.response("Empty", HttpStatus.NO_CONTENT, null)));
+        });
     }
 
     public static Mono<ResponseEntity<Object>> CheckCreditCard(Logger log, IClientService clientService, IPasiveService pasiveService, IMovementService movementService, IActiveService activeService, String idClient, String idPasive)
@@ -62,31 +60,28 @@ public class UpgradeVIPHelper
                         return Mono.just(ResponseHandler.response("Not Found", HttpStatus.NO_CONTENT, null));
                 }
 
-        )
-        .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
-        .switchIfEmpty(Mono.just(ResponseHandler.response("Empty", HttpStatus.NO_CONTENT, null)));
+        );
     }
 
-    public static Mono<ResponseEntity<Object>> FindActive(Logger log, IClientService clientService,IPasiveService pasiveService, IMovementService movementService,IActiveService activeService, String idClient)
+    public static Mono<ResponseEntity<Object>> FindPasive(Logger log, IClientService clientService,IPasiveService pasiveService, IMovementService movementService,IActiveService activeService, String idClient)
     {
         return pasiveService.ExistByClientIdType(1000, idClient)
                 .flatMap(responsePasive -> {
                     if(responsePasive.getData()!= null)
                     {
+                        log.info(responsePasive.toString());
                         return CheckCreditCard(log,clientService,pasiveService,movementService,activeService,idClient, responsePasive.getData());
                     }
                     else
                         return Mono.just(ResponseHandler.response("Not Found", HttpStatus.NO_CONTENT, null));
-                })
-                .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
-                .switchIfEmpty(Mono.just(ResponseHandler.response("Empty", HttpStatus.NO_CONTENT, null)));
-    }
+                });
+        }
 
 
 
     public static Mono<ResponseEntity<Object>> UpdateVIPSequence(Logger log, IClientService clientService, IPasiveService pasiveService, IMovementService movementService, IActiveService activeService, String idClient)
     {
-        return FindActive(log,clientService, pasiveService,movementService,activeService,idClient);
+        return FindPasive(log,clientService, pasiveService,movementService,activeService,idClient);
     }
 
 

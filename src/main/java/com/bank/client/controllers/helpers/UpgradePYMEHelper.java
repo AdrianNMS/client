@@ -39,7 +39,7 @@ public class UpgradePYMEHelper
     }
 
 
-    public static Mono<ResponseEntity<Object>> CheckCreditCard(Logger log, IPasiveService pasiveService, IActiveService activeService, IClientService clientService, String idClient, String idPasive)
+    public static Mono<ResponseEntity<Object>> CheckCreditCard(Logger log, IActiveService activeService, IClientService clientService, String idClient, String idPasive)
     {
         return activeService.checkCreditCard(idClient, 2003).flatMap(responseActive ->
                 {
@@ -56,13 +56,13 @@ public class UpgradePYMEHelper
         .switchIfEmpty(Mono.just(ResponseHandler.response("Empty", HttpStatus.NO_CONTENT, null)));
     }
 
-    public static Mono<ResponseEntity<Object>> FindActive(Logger log, IPasiveService pasiveService, IActiveService activeService, IClientService clientService, String idClient)
+    public static Mono<ResponseEntity<Object>> FindPasive(Logger log, IPasiveService pasiveService, IActiveService activeService, IClientService clientService, String idClient)
     {
         return pasiveService.ExistByClientIdType(1001,idClient)
                 .flatMap(responsePasive -> {
                     if(responsePasive.getData()!=null)
                     {
-                        return CheckCreditCard(log,pasiveService,activeService,clientService,idClient, responsePasive.getData());
+                        return CheckCreditCard(log,activeService,clientService,idClient, responsePasive.getData());
                     }
                     else
                         return Mono.just(ResponseHandler.response("Not Found", HttpStatus.NO_CONTENT, null));
@@ -74,6 +74,6 @@ public class UpgradePYMEHelper
 
     public static Mono<ResponseEntity<Object>> UpdatePYMESequence(Logger log, IPasiveService pasiveService, IActiveService activeService, IClientService clientService, String idClient)
     {
-        return FindActive(log,pasiveService,activeService,clientService, idClient);
+        return FindPasive(log,pasiveService,activeService,clientService, idClient);
     }
 }

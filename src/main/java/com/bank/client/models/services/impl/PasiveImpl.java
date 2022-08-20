@@ -20,7 +20,7 @@ public class PasiveImpl implements IPasiveService
     public Mono<ResponsePasive> ExistByClientIdType(Integer type, String idClient)
     {
         return webClient.get()
-                .uri("/api/active/client/"+type+"/"+idClient)
+                .uri("/api/pasive/client/"+type+"/"+idClient)
                 .retrieve()
                 .bodyToMono(ResponsePasive.class);
     }
