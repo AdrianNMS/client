@@ -86,7 +86,7 @@ public class ClientRestController
     }
 
     @GetMapping("/param/{id}/{code}")
-    public Mono<ResponseEntity<Object>> getParam(@PathVariable("id") String id, Integer code)
+    public Mono<ResponseEntity<Object>> getParam(@PathVariable("id") String id, @PathVariable("code")  Integer code)
     {
         log.info("[INI] getParams");
 

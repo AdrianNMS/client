@@ -13,7 +13,8 @@ public class GetParamsHelper
 {
     public static Mono<ResponseEntity<Object>> getParameter(Client client, Integer code, IParameterService parameterService, Logger log)
     {
-
+        log.info("error");
+        log.info(code.toString());
         return parameterService.findByCode(client.getTypeClientData(), code)
                 .flatMap(responseParameter ->
                 {
@@ -25,8 +26,9 @@ public class GetParamsHelper
                 });
     }
 
-    public static Mono<ResponseEntity<Object>> CheckClient(String id, int code, IParameterService parameterService, IClientService clientService, Logger log)
+    public static Mono<ResponseEntity<Object>> CheckClient(String id, Integer code, IParameterService parameterService, IClientService clientService, Logger log)
     {
+        log.info(id);
         return clientService.Find(id)
                 .flatMap(client -> {
                     if(client!=null)
@@ -39,7 +41,7 @@ public class GetParamsHelper
                 });
     }
 
-    public static Mono<ResponseEntity<Object>> GetParamsSecuence(String id, int code, IParameterService parameterService, IClientService clientService, Logger log)
+    public static Mono<ResponseEntity<Object>> GetParamsSecuence(String id, Integer code, IParameterService parameterService, IClientService clientService, Logger log)
     {
         return CheckClient(id,code,parameterService,clientService,log);
     }

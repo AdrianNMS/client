@@ -24,8 +24,7 @@ public class UpgradePYMEHelper
                     if(client!=null)
                     {
                         log.info(client.toString());
-                        Company clientData = (Company)client.getClientData();
-                        clientData.setCompanyType(CompanyType.PYME);
+                        client.getCompany().setCompanyType(CompanyType.PYME);
                         return clientService.Update(idClient,client).flatMap(client1 -> {
                             if(client1!= null)
                                 return Mono.just(ResponseHandler.response("Done", HttpStatus.OK, client1));

@@ -28,34 +28,47 @@ public class Client extends Audit
     private String documentId;
     private String phoneNumber;
     private String email;
-    @NotNull(message = "clientData must not be null")
-    private Object clientData;
+
+    private Personal personal;
+    private Company company;
 
     public void setClientDataId(String idClientData)
     {
-        if(clientData instanceof Personal)
+        if(type == ClientType.PERSONAL)
         {
-            ((Personal) clientData).setId(idClientData);
+            personal.setId(idClientData);
         }
-        else if(clientData instanceof Company)
+        else if(type == ClientType.COMPANY)
         {
-            ((Company) clientData).setId(idClientData);
+            company.setId(idClientData);
         }
     }
 
     public Integer getTypeClientData()
     {
-        if(clientData instanceof Personal)
+        if(type == ClientType.PERSONAL)
         {
-            return ((Personal) clientData).getPersonalType().getValue();
+            return personal.getPersonalType().getValue();
         }
-        else if(clientData instanceof Company)
+        else if(type == ClientType.COMPANY)
         {
-            return ((Company) clientData).getCompanyType().getValue();
+            return company.getCompanyType().getValue();
         }
         else
         {
             return null;
+        }
+    }
+
+    public void clear()
+    {
+        if(type == ClientType.PERSONAL)
+        {
+            setCompany(null);
+        }
+        else if(type == ClientType.COMPANY)
+        {
+            setPersonal(null);
         }
     }
 

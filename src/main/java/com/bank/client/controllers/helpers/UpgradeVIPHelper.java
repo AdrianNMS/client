@@ -22,8 +22,7 @@ public class UpgradeVIPHelper
                     if(client!=null)
                     {
                         log.info(client.toString());
-                        Personal clientData = (Personal)client.getClientData();
-                        clientData.setPersonalType(PersonalType.VIP);
+                        client.getPersonal().setPersonalType(PersonalType.VIP);
                         return clientService.Update(idClient,client).flatMap(client1 -> {
                             if(client1!= null)
                                 return Mono.just(ResponseHandler.response("Done", HttpStatus.OK, client1));

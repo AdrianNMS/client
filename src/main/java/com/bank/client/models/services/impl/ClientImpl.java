@@ -29,7 +29,7 @@ public class ClientImpl implements IClientService
 
     @Override
     public Mono<Client> Create(Client client) {
-
+        client.clear();
         client.setClientDataId(new ObjectId().toString());
         client.setDateRegister(LocalDateTime.now());
         return dao.save(client);
@@ -41,6 +41,7 @@ public class ClientImpl implements IClientService
         {
             if (check)
             {
+                client.clear();
                 client.setDateUpdate(LocalDateTime.now());
                 return dao.save(client);
             }
