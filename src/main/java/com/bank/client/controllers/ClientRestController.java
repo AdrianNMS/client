@@ -114,5 +114,15 @@ public class ClientRestController
 
     }
 
+    @GetMapping("/type/{idClient}")
+    public Mono<ResponseEntity<Object>> getClientType(@PathVariable("idClient") String idClient)
+    {
+        log.info("[INI] getClientType");
+        return clientService.Find(idClient)
+                .flatMap(client -> Mono.just(ResponseHandler.response("Done", HttpStatus.OK, client.getType().getValue())))
+                .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
+                .doFinally(fin -> log.info("[END] find Client"));
+    }
+
 }
 
