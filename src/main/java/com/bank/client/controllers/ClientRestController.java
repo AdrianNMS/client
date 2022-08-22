@@ -6,6 +6,8 @@ import com.bank.client.controllers.helpers.UpgradeVIPHelper;
 import com.bank.client.handler.ResponseHandler;
 import com.bank.client.models.documents.Client;
 import com.bank.client.models.services.*;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,7 @@ public class ClientRestController
     @Autowired
     private IMovementService movementService;
     private static final Logger log = LoggerFactory.getLogger(ClientRestController.class);
+    private static final String RESILENCE_SERVICE = "defaultConfig";
 
     @GetMapping
     public Mono<ResponseEntity<Object>> findAll()
@@ -86,6 +89,8 @@ public class ClientRestController
     }
 
     @GetMapping("/param/{id}/{code}")
+    @TimeLimiter(name = RESILENCE_SERVICE)
+    @CircuitBreaker(name = RESILENCE_SERVICE,fallbackMethod ="failedGetParam")
     public Mono<ResponseEntity<Object>> getParam(@PathVariable("id") String id, @PathVariable("code")  Integer code)
     {
         log.info("[INI] getParams");
@@ -95,6 +100,8 @@ public class ClientRestController
     }
 
     @GetMapping("/vip/{idClient}")
+    @TimeLimiter(name = RESILENCE_SERVICE)
+    @CircuitBreaker(name = RESILENCE_SERVICE,fallbackMethod ="failedUpdateVIP")
     public Mono<ResponseEntity<Object>> updateVIP(@PathVariable("idClient") String idClient)
     {
         log.info("[INI] updateVIP");
@@ -105,6 +112,8 @@ public class ClientRestController
     }
 
     @GetMapping("/pyme/{idClient}")
+    @TimeLimiter(name = RESILENCE_SERVICE)
+    @CircuitBreaker(name = RESILENCE_SERVICE,fallbackMethod ="failedUpdatePyme")
     public Mono<ResponseEntity<Object>> updatePyme(@PathVariable("idClient") String idClient)
     {
         log.info("[INI] updatePyme");
@@ -122,6 +131,35 @@ public class ClientRestController
                 .flatMap(client -> Mono.just(ResponseHandler.response("Done", HttpStatus.OK, client.getType().getValue())))
                 .onErrorResume(error -> Mono.just(ResponseHandler.response(error.getMessage(), HttpStatus.BAD_REQUEST, null)))
                 .doFinally(fin -> log.info("[END] find Client"));
+    }
+
+    public Mono<ResponseEntity<Object>> failedGetParam(String id,Integer code,RuntimeException e)
+    {
+        log.error("[INIT] failedGetParam");
+        log.error(e.getMessage());
+        log.error(id);
+        log.error(code.toString());
+        log.error("[END] failedGetParam");
+        return Mono.just(ResponseHandler.response("Overcharged method", HttpStatus.OK, null));
+    }
+
+    public Mono<ResponseEntity<Object>> failedUpdateVIP(String idClient, RuntimeException e)
+    {
+        log.error("[INIT] failedUpdateVIP");
+        log.error(e.getMessage());
+        log.error(idClient);
+        log.error("[END] failedUpdateVIP");
+        return Mono.just(ResponseHandler.response("Overcharged method", HttpStatus.OK, null));
+    }
+
+
+    public Mono<ResponseEntity<Object>> failedUpdatePyme(String idClient, RuntimeException e)
+    {
+        log.error("[INIT] failedUpdatePyme");
+        log.error(e.getMessage());
+        log.error(idClient);
+        log.error("[END] failedUpdatePyme");
+        return Mono.just(ResponseHandler.response("Overcharged method", HttpStatus.OK, null));
     }
 
 }
